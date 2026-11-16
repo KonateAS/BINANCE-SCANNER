@@ -43,7 +43,7 @@ function candlePoint(bar: Bar) {
 }
 
 function volumePoint(bar: Bar) {
-  return { time: Math.floor(bar.t / 1000) as any, value: bar.v, color: bar.c >= bar.o ? '#246b58' : '#763b42' };
+  return { time: Math.floor(bar.t / 1000) as any, value: bar.v, color: bar.c >= bar.o ? '#31563d' : '#5a3338' };
 }
 
 export default function MarketChart({
@@ -82,15 +82,15 @@ export default function MarketChart({
     setStreamState('connecting');
     const chart = createChart(element, {
       height: 300,
-      layout: { background: { color: '#0e151b' }, textColor: '#94a4ae' },
-      grid: { vertLines: { color: '#1b252d' }, horzLines: { color: '#1b252d' } },
-      rightPriceScale: { borderColor: '#26333d' },
-      timeScale: { borderColor: '#26333d', timeVisible: true },
-      crosshair: { vertLine: { color: '#3c535f' }, horzLine: { color: '#3c535f' } },
+      layout: { background: { color: '#111614' }, textColor: '#9aa99f' },
+      grid: { vertLines: { color: '#26312b' }, horzLines: { color: '#26312b' } },
+      rightPriceScale: { borderColor: '#26312b' },
+      timeScale: { borderColor: '#26312b', timeVisible: true },
+      crosshair: { vertLine: { color: '#52634f' }, horzLine: { color: '#52634f' } },
     });
     const candles = chart.addSeries(CandlestickSeries, {
-      upColor: '#43d5a0', downColor: '#ff727b', borderVisible: false,
-      wickUpColor: '#43d5a0', wickDownColor: '#ff727b', priceLineVisible: false,
+      upColor: '#7ce0a0', downColor: '#ff8e8e', borderVisible: false,
+      wickUpColor: '#7ce0a0', wickDownColor: '#ff8e8e', priceLineVisible: false,
     });
     let currentPriceLine: IPriceLine | undefined;
     const addPlanLine = (price: number | null, title: string, color: string, lineStyle: LineStyle) => {
@@ -98,10 +98,10 @@ export default function MarketChart({
       candles.createPriceLine({ price, title, color, lineWidth: 1, lineStyle, axisLabelVisible: true });
     };
     if (entry !== null) {
-      addPlanLine(entry, 'ENTRÉE', '#66b7ff', LineStyle.Dashed);
-      addPlanLine(stop, 'STOP', '#ff727b', LineStyle.Dashed);
-      addPlanLine(target1, 'TP1', '#43d5a0', LineStyle.Dashed);
-      addPlanLine(target2, 'TP2', '#9be9c9', LineStyle.Dotted);
+      addPlanLine(entry, 'ENTRÉE', '#b7f77a', LineStyle.Dashed);
+      addPlanLine(stop, 'STOP', '#ff8e8e', LineStyle.Dashed);
+      addPlanLine(target1, 'TP1', '#7ce0a0', LineStyle.Dashed);
+      addPlanLine(target2, 'TP2', '#b7f77a', LineStyle.Dotted);
     }
     const volume = chart.addSeries(HistogramSeries, {
       priceFormat: { type: 'volume' }, priceScaleId: '', lastValueVisible: false, priceLineVisible: false,
@@ -113,7 +113,7 @@ export default function MarketChart({
       candleCloseAt.current = bar.t + interval * (bar.closed ? 2 : 1);
       if (currentPriceLine) currentPriceLine.applyOptions({ price: bar.c });
       else currentPriceLine = candles.createPriceLine({
-        price: bar.c, title: 'PRIX', color: '#f2c66d', lineWidth: 2,
+        price: bar.c, title: 'PRIX', color: '#b7f77a', lineWidth: 2,
         lineStyle: LineStyle.Solid, axisLabelVisible: true,
       });
       setLatestBar(toHoverBar(bar));

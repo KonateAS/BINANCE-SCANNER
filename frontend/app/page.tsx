@@ -130,10 +130,12 @@ export default function Home() {
   return (
     <main className="shell">
       <header className="topbar">
-        <div className="brand">BINANCE <b>FUTURES</b> SCANNER</div>
-        <div className="status" aria-live="polite">
-          <i style={{ background: apiState === 'offline' ? '#ff727b' : connected ? '#43d5a0' : '#e9a84f' }} />
-          {connectionLabel}　·　{apiState === 'online' && (health.database ? 'POSTGRESQL' : 'BASE HORS LIGNE')}
+        <div className="topbar-inner">
+          <div className="brand"><span className="brand-mark" aria-hidden="true">⌁</span> BINANCE SCANNER <small>USDⓈ-M</small></div>
+          <div className="status" aria-live="polite">
+            <i style={{ background: apiState === 'offline' ? '#ff8e8e' : connected ? '#7ce0a0' : '#b7f77a' }} />
+            {connectionLabel}　·　{apiState === 'online' && (health.database ? 'POSTGRESQL' : 'BASE HORS LIGNE')}
+          </div>
         </div>
       </header>
 
@@ -145,8 +147,8 @@ export default function Home() {
           </div>
           <div className="stats">
             <div className="stat"><small>Paires actives</small><strong>{health.symbols || '—'}</strong></div>
-            <div className="stat"><small>Confirmés</small><strong style={{ color: '#64deb2' }}>{confirmedCount}</strong></div>
-            <div className="stat"><small>Pré-signaux</small><strong style={{ color: '#edc16e' }}>{previewCount}</strong></div>
+            <div className="stat"><small>Confirmés</small><strong style={{ color: '#7ce0a0' }}>{confirmedCount}</strong></div>
+            <div className="stat"><small>Pré-signaux</small><strong style={{ color: '#b7f77a' }}>{previewCount}</strong></div>
           </div>
         </div>
 
@@ -189,7 +191,7 @@ export default function Home() {
                         setSelected(row);
                       }
                     }}
-                    style={{ cursor: 'pointer', background: isSelected ? '#14212a' : undefined }}
+                    className={isSelected ? 'selected' : ''}
                   >
                     <td className="symbol">{row.symbol}</td>
                     <td><span className={`badge ${row.side === 'LONG' ? 'long' : 'short'}`}>{row.side}</span></td>
@@ -201,7 +203,7 @@ export default function Home() {
                         : <span className="muted">Surveillance</span>}</td>
                     <td className="mono score">{row.score}/100</td>
                     <td className="mono">{row.price.toPrecision(7)}</td>
-                    <td className="mono" style={{ color: (row.change_24h ?? 0) >= 0 ? '#61ddb0' : '#ff7a80' }}>
+                    <td className="mono" style={{ color: (row.change_24h ?? 0) >= 0 ? '#7ce0a0' : '#ff8e8e' }}>
                       {row.change_24h == null ? '—' : `${row.change_24h.toFixed(2)}%`}
                     </td>
                     <td className="mono">{row.rsi.toFixed(1)}</td>
