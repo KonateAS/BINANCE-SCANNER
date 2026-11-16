@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e0d">
+  <meta name="description" content="Binance Futures Scanner : un scanner local de contrats USDⓈ-M Futures, alimenté par les données publiques de Binance.">
+  <title>Binance Futures Scanner — Marchés, signaux et graphiques</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e0d;
+      --panel: #111614;
+      --panel-soft: #151c18;
+      --line: #26312b;
+      --text: #eff5f0;
+      --muted: #9aa99f;
+      --accent: #b7f77a;
+      --accent-dark: #15220e;
+      --green: #7ce0a0;
+      --red: #ff8e8e;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(ellipse at 78% 12%, rgba(105, 160, 79, .12), transparent 31rem),
+        linear-gradient(180deg, #0b0e0d 0%, #0c100e 48%, #0b0e0d 100%);
+      line-height: 1.6;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1080px, calc(100% - 40px)); margin-inline: auto; }
+    .topbar { height: 76px; border-bottom: 1px solid rgba(174, 198, 181, .12); }
+    .nav { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-size: 14px; font-weight: 750; letter-spacing: .09em; }
+    .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--accent); background: #1a2717; border: 1px solid #33482b; font-size: 17px; }
+    .nav-links { display: flex; align-items: center; gap: 25px; color: var(--muted); font-size: 13px; }
+    .nav-links a { text-decoration: none; transition: color .2s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links .nav-cta { color: var(--accent); }
+    .hero { position: relative; padding: 105px 0 82px; overflow: hidden; }
+    .hero-grid { display: grid; grid-template-columns: 1.08fr .92fr; align-items: center; gap: 56px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--accent); font: 12px var(--mono); letter-spacing: .045em; }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px rgba(183, 247, 122, .7); }
+    h1 { max-width: 660px; margin: 20px 0 19px; font-size: clamp(42px, 6.2vw, 70px); line-height: 1.04; letter-spacing: -.055em; font-weight: 680; }
+    h1 span { color: var(--accent); }
+    .hero-copy { max-width: 550px; margin: 0; color: #aab7ae; font-size: 16px; line-height: 1.8; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 30px; }
+    .button { display: inline-flex; justify-content: center; align-items: center; min-height: 46px; padding: 0 19px; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 650; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+    .button:hover { transform: translateY(-2px); border-color: #52634f; }
+    .button-primary { color: #11170d; background: var(--accent); border-color: var(--accent); }
+    .button-primary:hover { background: #c8ff91; border-color: #c8ff91; }
+    .button-secondary { color: #d9e2db; background: rgba(255,255,255,.025); }
+    .hero-note { margin-top: 21px; color: #77867d; font-size: 12px; }
+    .terminal { position: relative; padding: 17px; border: 1px solid #2a352e; border-radius: 13px; background: linear-gradient(145deg, rgba(22, 29, 25, .96), rgba(14, 18, 16, .96)); box-shadow: 0 30px 100px rgba(0,0,0,.3); transform: perspective(1000px) rotateY(-3deg) rotateX(1deg); }
+    .terminal-head { display: flex; align-items: center; justify-content: space-between; padding: 1px 2px 15px; color: #8e9b92; font: 11px var(--mono); }
+    .dots { display: flex; gap: 5px; }
+    .dots i { display: block; width: 7px; height: 7px; border-radius: 50%; background: #465148; }
+    .live { color: var(--muted); }
+    .market-head, .market-row { display: grid; grid-template-columns: 1.2fr .85fr .7fr; align-items: center; gap: 9px; }
+    .market-head { padding: 10px 11px; color: #738078; border-bottom: 1px solid #29342d; font: 9px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .market-row { padding: 13px 11px; border-bottom: 1px solid rgba(41,52,45,.7); font: 11px var(--mono); }
+    .market-row:last-child { border-bottom: 0; }
+    .pair { display: flex; align-items: center; gap: 8px; color: #e4ece6; font-weight: 600; }
+    .coin { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: var(--accent); background: #25331e; font-size: 9px; }
+    .price { color: #c8d2cb; }
+    .signal { justify-self: start; padding: 4px 7px; border-radius: 4px; color: var(--green); background: rgba(124,224,160,.09); font-size: 9px; }
+    .signal.short { color: var(--red); background: rgba(255,142,142,.09); }
+    .terminal-foot { display: flex; justify-content: space-between; padding: 13px 10px 1px; color: #77867d; font: 9px var(--mono); }
+    .section { padding: 79px 0; border-top: 1px solid rgba(174, 198, 181, .1); }
+    .section-kicker { margin: 0 0 10px; color: var(--accent); font: 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    h2 { margin: 0; font-size: clamp(27px, 3.8vw, 39px); line-height: 1.2; letter-spacing: -.04em; font-weight: 640; }
+    .section-intro { max-width: 620px; margin: 13px 0 0; color: var(--muted); font-size: 14px; }
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 32px; }
+    .feature { min-height: 188px; padding: 22px; border: 1px solid var(--line); border-radius: 10px; background: linear-gradient(150deg, rgba(21,28,24,.82), rgba(15,19,17,.72)); }
+    .feature-icon { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 18px; border: 1px solid #35452f; border-radius: 8px; color: var(--accent); background: #192318; font: 15px var(--mono); }
+    .feature h3 { margin: 0; font-size: 15px; font-weight: 620; }
+    .feature p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .setup-grid { display: grid; grid-template-columns: .75fr 1.25fr; align-items: start; gap: 54px; margin-top: 31px; }
+    .steps { display: grid; gap: 20px; }
+    .step { display: grid; grid-template-columns: 29px 1fr; gap: 12px; }
+    .step-num { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #3b4d35; border-radius: 50%; color: var(--accent); font: 11px var(--mono); }
+    .step h3 { margin: 1px 0 4px; font-size: 13px; font-weight: 620; }
+    .step p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .codebox { overflow: hidden; border: 1px solid #29352e; border-radius: 10px; background: #0e1210; }
+    .code-head { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #29352e; color: #95a49a; font: 10px var(--mono); }
+    pre { overflow-x: auto; margin: 0; padding: 17px 18px 20px; color: #d4e0d7; font: 11px/1.9 var(--mono); tab-size: 2; }
+    .code-comment { color: #728379; }
+    .requirements { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .tag { padding: 6px 9px; border: 1px solid #27322c; border-radius: 5px; color: #9aa99f; font: 10px var(--mono); }
+    .note { margin-top: 25px; padding: 15px 17px; border-left: 2px solid #8cc35d; border-radius: 0 7px 7px 0; color: #a7b4aa; background: rgba(183,247,122,.045); font-size: 11px; }
+    .note strong { color: #dce8dd; font-weight: 600; }
+    .footer { padding: 25px 0 35px; border-top: 1px solid rgba(174, 198, 181, .1); }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #78877d; font-size: 11px; }
+    .footer-links { display: flex; gap: 18px; }
+    .footer a { color: #a5b1a8; text-decoration: none; }
+    .footer a:hover { color: var(--accent); }
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 32px, 600px); }
+      .topbar { height: 66px; }
+      .nav-links { gap: 14px; font-size: 11px; }
+      .nav-links a:nth-child(1) { display: none; }
+      .hero { padding: 72px 0 58px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 38px; }
+      .terminal { max-width: 500px; transform: none; }
+      .section { padding: 59px 0; }
+      .features { grid-template-columns: 1fr; }
+      .feature { min-height: 0; }
+      .setup-grid { grid-template-columns: 1fr; gap: 27px; }
+    }
+    @media (max-width: 430px) {
+      .brand { font-size: 11px; }
+      .nav-links { gap: 10px; }
+      .nav-links a:nth-child(2) { display: none; }
+      .market-row { grid-template-columns: 1.2fr .8fr .65fr; gap: 5px; padding-inline: 6px; font-size: 9px; }
+      .market-head { padding-inline: 6px; font-size: 8px; }
+      .signal { padding: 4px 5px; font-size: 8px; }
+      .coin { width: 20px; height: 20px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav wrap" aria-label="Navigation principale">
+      <a class="brand" href="#accueil"><span class="brand-mark" aria-hidden="true">⌁</span> BINANCE SCANNER</a>
+      <div class="nav-links">
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#installation">Installation</a>
+        <a class="nav-cta" href="https://github.com/KonateAS/BINANCE-SCANNER">Voir sur GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="accueil">
+      <div class="hero-grid wrap">
+        <div>
+          <div class="eyebrow"><span class="pulse" aria-hidden="true"></span> SCANNER LOCAL · BINANCE USDⓈ-M</div>
+          <h1>Le marché en vue.<br><span>Les signaux aussi.</span></h1>
+          <p class="hero-copy">Suivez les contrats Binance Futures depuis une interface locale claire. Données publiques, graphiques actualisés et signaux techniques réunis dans un seul outil.</p>
+          <div class="actions">
+            <a class="button button-primary" href="#installation">Démarrer l’installation <span aria-hidden="true">&nbsp;→</span></a>
+            <a class="button button-secondary" href="https://github.com/KonateAS/BINANCE-SCANNER#readme">Lire la documentation</a>
+          </div>
+          <p class="hero-note">Windows · Python · Node.js · PostgreSQL &nbsp; / &nbsp; Aucun ordre n’est passé</p>
+        </div>
+
+        <div class="terminal" aria-label="Aperçu illustratif d'une liste de marchés et de signaux">
+          <div class="terminal-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>MARKET OVERVIEW</span><span class="live">APERÇU</span></div>
+          <div class="market-head"><span>Contrat</span><span>Dernier prix</span><span>Signal</span></div>
+          <div class="market-row"><span class="pair"><span class="coin">₿</span> BTCUSDT</span><span class="price">67 482,10</span><span class="signal">LONG</span></div>
+          <div class="market-row"><span class="pair"><span class="coin">Ξ</span> ETHUSDT</span><span class="price">3 521,84</span><span class="signal short">SHORT</span></div>
+          <div class="market-row"><span class="pair"><span class="coin">◎</span> SOLUSDT</span><span class="price">182,670</span><span class="signal">PRÉ-SIGNAL</span></div>
+          <div class="market-row"><span class="pair"><span class="coin">✕</span> XRPUSDT</span><span class="price">0,62410</span><span class="signal">LONG</span></div>
+          <div class="terminal-foot"><span>EXEMPLE D’INTERFACE</span><span>4 TIMEFRAMES</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="fonctionnalites">
+      <div class="wrap">
+        <p class="section-kicker">L’essentiel, sans détour</p>
+        <h2>Une vue claire des marchés suivis</h2>
+        <p class="section-intro">Le scanner rassemble les données et les outils utiles pour observer les contrats USDⓈ-M Futures depuis votre ordinateur.</p>
+        <div class="features">
+          <article class="feature"><div class="feature-icon" aria-hidden="true">↗</div><h3>Marché en temps réel</h3><p>Les mises à jour arrivent par WebSocket, avec récupération de l’historique nécessaire au démarrage.</p></article>
+          <article class="feature"><div class="feature-icon" aria-hidden="true">⌁</div><h3>Signaux et filtres</h3><p>Parcourez les signaux confirmés et pré-signaux, puis filtrez par timeframe, symbole ou direction.</p></article>
+          <article class="feature"><div class="feature-icon" aria-hidden="true">▥</div><h3>Graphiques intégrés</h3><p>Ouvrez un contrat pour consulter ses bougies et ses volumes, actualisés depuis l’API locale.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="installation">
+      <div class="wrap">
+        <p class="section-kicker">Prêt en quelques étapes</p>
+        <h2>Lancez le scanner en local</h2>
+        <div class="setup-grid">
+          <div>
+            <div class="steps">
+              <div class="step"><span class="step-num">01</span><div><h3>Installez les prérequis</h3><p>Windows 10/11, Python 3.11+, Node.js 20+ et PostgreSQL 16+ ou Docker Desktop.</p></div></div>
+              <div class="step"><span class="step-num">02</span><div><h3>Préparez Python</h3><p>Depuis le dossier du projet, créez l’environnement puis installez les dépendances backend.</p></div></div>
+              <div class="step"><span class="step-num">03</span><div><h3>Démarrez l’application</h3><p>Lancez <code>START.cmd</code>, puis ouvrez l’adresse locale affichée dans votre navigateur.</p></div></div>
+            </div>
+            <div class="requirements"><span class="tag">WINDOWS 10/11</span><span class="tag">PYTHON 3.11+</span><span class="tag">NODE.JS 20+</span><span class="tag">POSTGRESQL 16+</span></div>
+          </div>
+          <div>
+            <div class="codebox">
+              <div class="code-head"><span>POWERSHELL · DOSSIER DU PROJET</span><span>INSTALLATION</span></div>
+              <pre><span class="code-comment"># Environnement et dépendances Python</span>
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+
+<span class="code-comment"># Lancez ensuite le scanner</span>
+.\START.cmd</pre>
+            </div>
+            <div class="note"><strong>Configuration :</strong> au premier démarrage, le script crée <code>backend/.env</code> depuis le modèle. Ce fichier reste local et privé. Consultez le README pour les options PostgreSQL et les détails d’installation.</div>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:28px">
+          <a class="button button-primary" href="https://github.com/KonateAS/BINANCE-SCANNER">Ouvrir le dépôt GitHub <span aria-hidden="true">&nbsp;↗</span></a>
+          <a class="button button-secondary" href="https://github.com/KonateAS/BINANCE-SCANNER#readme">Documentation complète</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner wrap">
+      <span>BINANCE SCANNER <span aria-hidden="true">·</span> Outil local à partir de données publiques.</span>
+      <div class="footer-links"><a href="https://github.com/KonateAS/BINANCE-SCANNER">GitHub</a><a href="https://github.com/KonateAS/BINANCE-SCANNER#readme">README &amp; aide</a></div>
+    </div>
+  </footer>
+</body>
+</html>
